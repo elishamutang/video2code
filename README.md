@@ -19,25 +19,7 @@ If you are on Windows, download the installer for Windows for Tesseract from [Te
 
 For other operating systems, please follow the instructions from Tesseract's documentation [here](https://tesseract-ocr.github.io/tessdoc/Installation.html).
 
-## 3. Client
-
-The repository holds both the client (frontend) and server (backend) for the project. The client was built using Svelte. To setup the client, run the following:
-
-1. Install project dependencies
-
-```
-npm install
-```
-
-2. Start client development server:
-
-```
-npm run dev
-```
-
-> If you are using VS Code, for better developer experience, please feel free to install the Svelte language support extension.
-
-## 4. Server
+## 3. Server
 
 The server was built using Django REST Framework. It currently stores the video that will be served to the frontend via the REST API. The extraction of a specific video frame and resulting code is done here. To setup the server, run the following:
 
@@ -72,5 +54,23 @@ TESSERACT_PATH=YOUR_PATH
 cd adv_ui_ocrroo_project
 python manage.py runserver
 ```
+
+## 4. Client
+
+The repository holds both the client (frontend) and server (backend) for the project. The client was built using Svelte. To setup the client, run the following:
+
+1. Install project dependencies
+
+```
+npm install
+```
+
+2. Start client development server:
+
+```
+npm run dev
+```
+
+> If you are using VS Code, for better developer experience, please feel free to install the Svelte language support extension.
 
 ## 5. Have fun!
