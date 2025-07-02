@@ -1,15 +1,15 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/2RqSnclT)
+# Video 2 Code
 
-# Installation
+## Installation
 
-# Pre-requisites
+## Pre-requisites
 
 1. [Groq AI API key](https://groq.com/)
-2. [Tesseract OCR Installer](#download-tesseract-ocr)
+2. [Tesseract OCR Installer](#2-download-tesseract-ocr)
 
-# 1. Clone Repo
+## 1. Clone Repo
 
-# 2. Download Tesseract OCR
+## 2. Download Tesseract OCR
 
 **PLEASE TAKE NOTE OF WHERE YOU INSTALL TESSERACT.EXE AS YOU WILL NEED TO SET THE PATH IN THE DJANGO APPLICATION.**
 
@@ -17,7 +17,7 @@ If you are on Windows, download the installer for Windows for Tesseract from [Te
 
 For other operating systems, please follow the instructions from Tesseract's documentation [here](https://tesseract-ocr.github.io/tessdoc/Installation.html).
 
-# 3. Client
+## 3. Client
 
 The repository holds both the client (frontend) and server (backend) for the project. The client was built using Svelte. To setup the client, run the following:
 
@@ -35,7 +35,7 @@ npm run dev
 
 > If you are using VS Code, for better developer experience, please feel free to install the Svelte language support extension.
 
-# 4. Server
+## 4. Server
 
 The server was built using Django REST Framework. It currently stores the video that will be served to the frontend via the REST API. The extraction of a specific video frame and resulting code is done here. To setup the server, run the following:
 
@@ -71,4 +71,4 @@ cd adv_ui_ocrroo_project
 python manage.py runserver
 ```
 
-# 5. Have fun!
+## 5. Have fun!
