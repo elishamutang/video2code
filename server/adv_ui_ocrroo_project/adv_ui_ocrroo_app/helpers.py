@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Videos directory
+vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'static', 'videos')
+
 # Set Tesseract OCR path
 tesseract_path = os.environ.get('TESSERACT_PATH')
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
@@ -15,7 +18,7 @@ pytesseract.pytesseract.tesseract_cmd = tesseract_path
 # Get video duration 
 def get_vid_duration(video_filename):
     try:
-        video_path = os.path.join(settings.BASE_DIR, 'videos', video_filename)
+        video_path = os.path.join(vid_folder_path, video_filename)
         
         if not os.path.exists(video_path):
             print(f"Video file not found: {video_path}")
@@ -70,11 +73,11 @@ def parse_timestamp_to_seconds(timestamp):
         raise ValueError("Invalid timestamp format - ensure all parts are valid number")
 
 
+# Extract frame based on timestamp input.
 def extract_frame(vid_filename, timestamp_seconds, original_timestamp):
     """Extract frame from video at specific timestamp"""
-    vids_folder = os.path.join(settings.BASE_DIR, 'videos')
-    vid_path = os.path.join(vids_folder, vid_filename)
-    frames_folder = os.path.join(vids_folder, 'frames')
+    vid_path = os.path.join(vid_folder_path, vid_filename)
+    frames_folder = os.path.join(vid_folder_path, 'frames')
 
     # Generate frame filename and path (using video filename instead of vid_id)
     timestamp_formatted = original_timestamp.replace(':', '_')
@@ -131,6 +134,7 @@ def extract_frame(vid_filename, timestamp_seconds, original_timestamp):
     return None
 
 
+# Extract code from frame.
 def extract_code_from_frame(frame_path):
     try:
         # Load the image

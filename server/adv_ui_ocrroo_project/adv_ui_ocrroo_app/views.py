@@ -8,11 +8,12 @@ from ranged_response import RangedFileResponse
 from .helpers import parse_timestamp_to_seconds, \
     extract_frame, extract_code_from_frame, clean_extracted_text
 
+vid_filename = 'oop.mp4'
+vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'static', 'videos')
 
 @api_view(['GET'])
 def serve_video(request):
-    filename = 'oop.mp4'
-    video_path = os.path.join(settings.BASE_DIR, 'videos', filename)
+    video_path = os.path.join(vid_folder_path, vid_filename)
     
     if not os.path.exists(video_path):
         return Response({'error': 'Video not found'}, status=404)
@@ -23,24 +24,21 @@ def serve_video(request):
         open(video_path, 'rb'), 
         content_type='video/mp4'
     )
-    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    response['Content-Disposition'] = f'inline; filename="{vid_filename}"'
     
     return response
 
 
 @api_view(['GET'])
 def get_vid_duration(request):
-    try:
-        # Set the video filename
-        video_filename = 'oop.mp4'  # Add extension if needed
-        
+    try:        
         # Construct the path to the video file
-        video_path = os.path.join(settings.BASE_DIR, 'videos', video_filename)
+        video_path = os.path.join(vid_folder_path, vid_filename)
         
         # Check if the file exists
         if not os.path.exists(video_path):
             return Response({
-                'error': f'Video file not found: {video_filename}'
+                'error': f'Video file not found: {vid_filename}'
             }, status=status.HTTP_404_NOT_FOUND)
         
         # Get video duration using OpenCV
@@ -59,7 +57,7 @@ def get_vid_duration(request):
         
         return Response({
             'message': 'Video duration retrieved successfully',
-            'video_filename': video_filename,
+            'video_filename': vid_filename,
             'duration_hours': hours,
             'duration_minutes': minutes,
             'duration_seconds': seconds,
@@ -75,10 +73,7 @@ def get_vid_duration(request):
 
 
 @api_view(['GET'])
-def get_vid_frame(request, timestamp):
-    # Set the video filename to 'oop'
-    video_filename = 'oop.mp4'
-    
+def get_vid_frame(request, timestamp):    
     # Convert timestamp to seconds
     try:
         timestamp_seconds = parse_timestamp_to_seconds(timestamp)
@@ -88,14 +83,14 @@ def get_vid_frame(request, timestamp):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     # Check if video file exists in videos folder
-    video_path = os.path.join(settings.BASE_DIR, 'videos', video_filename)
+    video_path = os.path.join(settings.BASE_DIR, 'videos', vid_filename)
     if not os.path.exists(video_path):
         return Response({
-            'error': f'Video file not found: {video_filename}'
+            'error': f'Video file not found: {vid_filename}'
         }, status=status.HTTP_404_NOT_FOUND)
 
     # Extract frame
-    frame_info = extract_frame(video_filename, timestamp_seconds, timestamp)
+    frame_info = extract_frame(vid_filename, timestamp_seconds, timestamp)
 
     if frame_info:
         # Read the image file and encode as base64
@@ -122,7 +117,7 @@ def get_vid_frame(request, timestamp):
 
         return Response({
             'message': 'Frame extracted successfully',
-            'video_filename': video_filename,
+            'video_filename': vid_filename,
             'timestamp': timestamp,
             'timestamp_seconds': timestamp_seconds,
             'frame_path': frame_info['frame_path'],
