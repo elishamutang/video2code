@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Videos directory
-vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'static', 'videos')
+vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'media', 'videos')
 
 # Set Tesseract OCR path
 tesseract_path = os.environ.get('TESSERACT_PATH')

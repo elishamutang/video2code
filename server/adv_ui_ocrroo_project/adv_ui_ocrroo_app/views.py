@@ -9,7 +9,7 @@ from .helpers import parse_timestamp_to_seconds, \
     extract_frame, extract_code_from_frame, clean_extracted_text
 
 vid_filename = 'oop.mp4'
-vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'static', 'videos')
+vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'media', 'videos')
 
 @api_view(['GET'])
 def serve_video(request):
@@ -83,8 +83,7 @@ def get_vid_frame(request, timestamp):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     # Check if video file exists in videos folder
-    video_path = os.path.join(settings.BASE_DIR, 'videos', vid_filename)
-    if not os.path.exists(video_path):
+    if not os.path.exists(vid_folder_path):
         return Response({
             'error': f'Video file not found: {vid_filename}'
         }, status=status.HTTP_404_NOT_FOUND)
