@@ -8,12 +8,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Final stage
-FROM node:22.14.0-slim
+# Nginx stage
+FROM nginx:latest
+RUN rm -rf /usr/share/nginx/html/*
 
-WORKDIR /app
-COPY --from=builder /app/build build/
-COPY --from=builder /app/node_modules node_modules/
-COPY package.json .
-EXPOSE 3000
-CMD ["node", "build"]
+COPY --from=builder /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
