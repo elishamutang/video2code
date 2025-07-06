@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video2code"
+requires-python = ">=3.11"
+version = "0.0.1"
+dependencies = [
+    "Django",
+    "django-cors-headers",
+    "django-environ",
+    "django-ranged-response",
+    "djangorestframework",
+    "opencv-python",
+    "pillow",
+    "pytesseract",
+    "requests",
+    "groq"
+]
+
+[tool.setuptools.packages.find]
+where = ["adv_ui_ocrroo_project"]
