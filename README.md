@@ -21,9 +21,11 @@ Built using Svelte and Django REST Framework.
 
 ## 2. Download Tesseract OCR
 
-**PLEASE TAKE NOTE OF WHERE YOU INSTALL TESSERACT.EXE AS YOU WILL NEED TO SET THE PATH IN THE DJANGO APPLICATION.**
+**(WINDOWS ONLY) PLEASE TAKE NOTE OF WHERE YOU INSTALL TESSERACT.EXE AS YOU WILL NEED TO SET THE PATH IN THE DJANGO APPLICATION.**
 
 If you are on Windows, download the installer for Windows for Tesseract from [Tesseract at UB Mannheim](https://github.com/UB-Mannheim/tesseract/wiki).
+
+If you are on Linux, you can install Tesseract through the terminal using `apt-get install tesseract-ocr`.
 
 For other operating systems, please follow the instructions from Tesseract's documentation [here](https://tesseract-ocr.github.io/tessdoc/Installation.html).
 
@@ -53,7 +55,7 @@ pip install -r requirements.txt
 
 ```
 GROQ_KEY=YOUR_KEY
-TESSERACT_PATH=YOUR_PATH
+TESSERACT_PATH=YOUR_PATH (WINDOWS ONLY, IF YOU ARE ON LINUX TESSERACT OCR IS ALREADY ADDED TO YOUR PATH)
 ```
 
 5. Start project
