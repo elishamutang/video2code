@@ -1,6 +1,14 @@
 # Video 2 Code
 
-**Live preview comming soon!**
+## What is it?
+
+A bare-bones prototype to _detect_ code, _extract_ it from a specific frame, and display it to the user in the appropriate format.
+
+Built using Svelte and Django REST Framework.
+
+## Live Preview
+
+** COMING SOON **
 
 ## Installation
 
