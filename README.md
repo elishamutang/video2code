@@ -15,7 +15,15 @@ Built using Svelte and Django REST Framework.
 ## Pre-requisites
 
 1. [Groq AI API key](https://groq.com/)
-2. [Tesseract OCR Installer](#2-download-tesseract-ocr)
+2. [Tesseract OCR Installer](#2-download-tesseract-ocr) (WINDOWS ONLY)
+
+## Using Docker
+
+I have created a docker compose file that will get this application running in no time! Simply do the following:
+
+```
+docker compose up
+```
 
 ## 1. Clone Repo
 
