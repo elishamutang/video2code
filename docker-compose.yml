@@ -1,0 +1,36 @@
+services:
+  backend:
+    image: video2code-backend
+    container_name: video2code-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: runner
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./server/adv_ui_ocrroo_project/.env
+    volumes:
+      - media_volume:/app/adv_ui_ocrroo_project/adv_ui_ocrroo_app/media
+
+  frontend:
+    image: video2code-frontend
+    container_name: video2code-frontend
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+
+  nginx:
+    image: nginx:latest
+    container_name: video2code-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./client/build:/usr/share/nginx/html
+      - media_volume:/app/adv_ui_ocrroo_project/adv_ui_ocrroo_app/media
+
+volumes:
+  media_volume:
