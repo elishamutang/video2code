@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { toast } from 'svelte-sonner';
 	import type { VideoData, FrameData } from '$lib/dataTypes';
 	import { onMount } from 'svelte';
 	import { validateTimestamp } from '$lib/helpers';
@@ -33,12 +34,10 @@
 
 	let submitVidFrameFormBtn: HTMLButtonElement;
 
-	const durationEndpoint = 'http://127.0.0.1:8000/api/video/duration/';
-
 	onMount(async () => {
-		// Get video and video duration.
+		// Get video duration.
 		try {
-			const response = await fetch(durationEndpoint, {
+			const response = await fetch('http://127.0.0.1:8000/api/video/duration/', {
 				method: 'GET'
 			});
 
@@ -46,6 +45,7 @@
 			isLoading = false;
 		} catch (error: any) {
 			console.error('Error getting video duration');
+			toast.error('Error getting video duration, please refresh the page!');
 		}
 	});
 
@@ -112,9 +112,11 @@
 				if (response.ok) {
 					frameData = await response.json();
 					timestampCollection.push(frameData);
+					toast.success('Code generated!');
 				}
 			} catch (error: any) {
 				console.error('Error getting video frame');
+				toast.error('Error generating the extracted code, please try again!');
 			} finally {
 				isLoading = false;
 			}
@@ -128,6 +130,10 @@
 		if (codeTarget !== undefined && codeTarget !== null) {
 			navigator.clipboard.writeText(codeTarget.textContent ?? '');
 		}
+
+		toast.info('Code copied to clipboard', {
+			description: `Copied code from timestamp No.${timestampIdx}!`
+		});
 	}
 
 	$effect(() => {
@@ -154,13 +160,17 @@
 
 	<!-- Brief description -->
 	<section
-		class="sm:place-self-center sm:max-w-md mb-5 border p-2 rounded-lg bg-slate-100 border-slate-500 sm:col-start-1 sm:col-end-3 sm:row-start-2 sm:row-end-3"
+		class="sm:border-b sm:border-b-slate-300 w-full sm:col-start-1 sm:col-end-3 sm:row-start-2 sm:row-end-3"
 	>
-		<h2 class="font-bold text-xl text-slate-600">What is this about?</h2>
-		<p class="text-slate-800">
-			A prototype to <span class="italic">detect</span> code, <span class="italic">extract</span> it
-			from a specific frame, and display it to the user in the appropriate format.
-		</p>
+		<section
+			class="sm:place-self-center sm:max-w-md mb-5 border p-2 rounded-lg bg-slate-100 border-slate-500"
+		>
+			<h2 class="font-bold text-xl text-slate-600">What is this about?</h2>
+			<p class="text-slate-800">
+				A prototype to <span class="italic">detect</span> code, <span class="italic">extract</span> it
+				from a specific frame, and display it to the user in the appropriate format.
+			</p>
+		</section>
 	</section>
 
 	<section
@@ -181,8 +191,9 @@
 				{#if validationErrors.length > 0}
 					<ul>
 						{#each validationErrors as errorMsg}
-							<li class="border p-2 my-2 bg-red-800 border-red-800 rounded-md">
-								{errorMsg}
+							<li class="flex border p-2 my-2 bg-red-400 border-red-800 rounded-md">
+								<span class="font-semibold text-red-800 flex-1">Invalid input: </span>
+								<div class="flex-4">{errorMsg}</div>
 							</li>
 						{/each}
 					</ul>
@@ -269,7 +280,7 @@
 
 		<!-- Extracted frame here -->
 		{#if frameData.frame_url !== ''}
-			<h1 class="text-2xl font-semibold border-b py-2 border-black">
+			<h1 class="text-2xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
 				Video selected at {frameData.timestamp}
 			</h1>
 			<img
@@ -282,19 +293,24 @@
 
 	<!-- Timestamps section here -->
 	<section
-		class="md:p-3 md:border-l md:border-l-slate-300 md:rounded-none sm:col-2 sm:row-start-3 sm:row-end-5 border border-transparent w-full max-h-[1000px] h-full overflow-auto rounded-lg"
+		class="md:p-4 md:border-l md:border-l-slate-300 md:rounded-none sm:col-2 sm:row-start-3 sm:row-end-5 border border-transparent w-full max-h-[1000px] h-full overflow-auto rounded-lg"
 	>
-		<h1 class="md:mt-0 text-3xl m-2 mt-5 font-semibold text-slate-600">Timestamps</h1>
-		{#if timestampCollection.length === 0}
+		<h1 class="md:mt-0 text-3xl my-2 mt-5 font-semibold text-slate-600">Timestamps</h1>
+
+		{#if timestampCollection.length === 0 && !isLoading}
 			<p class="m-2 text-slate-500 italic">Nothing to see here...</p>
 		{:else}
+			{#if isLoading}
+				<Skeleton class="bg-slate-400 w-full h-[300px]" />
+			{/if}
+
 			{#each timestampCollection as _, idx}
 				{@const entry = timestampCollection[timestampCollection.length - 1 - idx]}
 				<section
 					aria-labelledby="Timestamp at 0 hours, 0 minutes, and 0 seconds."
-					class="border m-2 p-2 rounded-lg"
+					class="my-3 py-2 border-b border-b-slate-300"
 				>
-					<h2 class="font-bold">
+					<h2 class="font-bold text-slate-600">
 						<span class="px-1">{timestampCollection.length - idx}.</span> Timestamp at {entry.timestamp}
 					</h2>
 					<pre class="border border-slate-300 p-4 m-4 relative rounded-lg bg-slate-100">
