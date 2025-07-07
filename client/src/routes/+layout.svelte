@@ -1,6 +1,9 @@
 <script lang="ts">
-	let { children } = $props();
 	import '../app.css';
+	import { Toaster } from '$lib/components/ui/sonner/index';
+	let { children } = $props();
 </script>
+
+<Toaster position="bottom-right" richColors />
 
 {@render children()}
