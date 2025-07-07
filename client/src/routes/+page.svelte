@@ -105,7 +105,7 @@
 			validationErrors = [];
 
 			try {
-				const response = await fetch(`http://127.0.0.1:8000/api/video/frame/${timestamp}/`, {
+				const response = await fetch(`http://127.0.0.1:8000/api/media/video/frame/${timestamp}/`, {
 					method: 'GET'
 				});
 
@@ -262,7 +262,7 @@
 		<section class="flex flex-col items-center">
 			<h1 class="text-2xl mb-2 font-semibold text-slate-600">Video</h1>
 			<video controls class="mb-10 w-full max-w-[800px]">
-				<source src="http://127.0.0.1:8000/api/video/" type="video/mp4" />
+				<source src="http://127.0.0.1:8000/api/media/video/" type="video/mp4" />
 				<track kind="captions" />
 			</video>
 		</section>
