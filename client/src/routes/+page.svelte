@@ -33,6 +33,7 @@
 	let timestampCollection: FrameData[] = $state([]);
 
 	let submitVidFrameFormBtn: HTMLButtonElement;
+	let videoElem: HTMLMediaElement;
 
 	onMount(async () => {
 		// Get video duration.
@@ -110,9 +111,13 @@
 				});
 
 				if (response.ok) {
+					// Get frame data.
 					frameData = await response.json();
 					timestampCollection.push(frameData);
 					toast.success('Code generated!');
+
+					// Set currentTime for videoElem
+					videoElem.currentTime = frameData.timestamp_seconds;
 				}
 			} catch (error: any) {
 				console.error('Error getting video frame');
@@ -125,14 +130,28 @@
 
 	// Allow user to copy code snippet from a specific timestamp.
 	function getCode(timestampIdx: number): void {
-		const codeTarget = document.getElementById(`timestamp-${timestampIdx}`);
+		const timestampCard = document.getElementById(`timestamp-${timestampIdx}`);
 
-		if (codeTarget !== undefined && codeTarget !== null) {
-			navigator.clipboard.writeText(codeTarget.textContent ?? '');
+		if (timestampCard !== undefined && timestampCard !== null) {
+			const code = timestampCard.querySelector('code');
+
+			if (code) {
+				navigator.clipboard.writeText(code.textContent ?? '');
+			}
 		}
 
 		toast.info('Code copied to clipboard', {
 			description: `Copied code from timestamp No.${timestampIdx}!`
+		});
+	}
+
+	// Allow user to go to a specific point in time of the video based on timestamp.
+	function goToTimestamp(timestampIdx: number) {
+		frameData = timestampCollection[timestampIdx - 1];
+		videoElem.currentTime = frameData.timestamp_seconds;
+
+		toast.info('Back in time!', {
+			description: `Navigated back in time to ${frameData.timestamp}!`
 		});
 	}
 
@@ -146,7 +165,7 @@
 </script>
 
 <main
-	class="m-2 border-slate-300 rounded-lg sm:border md:p-5 max-w-7xl gap-5 sm:grid sm:grid-cols-2 sm:m-5"
+	class="m-2 border-slate-300 rounded-lg sm:border md:p-5 max-w-7xl gap-6 sm:grid sm:grid-cols-2 sm:m-5"
 >
 	<!-- Title -->
 	<section
@@ -174,7 +193,7 @@
 	</section>
 
 	<section
-		class="sm:row-start-3 sm:row-end-4 sm:max-w-[1000px] sm:col-1 border border-slate-500 w-full bg-slate-100 flex flex-col items-center p-2 rounded-lg"
+		class="sm:row-start-3 sm:row-end-4 sm:max-w-[1000px] sm:col-1 border border-slate-400 w-full bg-slate-100 flex flex-col items-center p-2 rounded-lg"
 	>
 		<!-- Form -->
 		<form
@@ -272,8 +291,14 @@
 		<!-- Video -->
 		<section class="flex flex-col items-center">
 			<h1 class="text-2xl mb-2 font-semibold text-slate-600">Video</h1>
-			<video controls class="mb-10 w-full max-w-[800px]">
+			<video
+				bind:this={videoElem}
+				poster="https://i.ytimg.com/vi/apACNr7DC_s/hq720.jpg?sqp=-oaymwEnCNAFEJQDSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLArfSCg8eIP-tmc8Q8YcbsZy5bwxA"
+				controls
+				class="mb-10 w-full max-w-[800px]"
+			>
 				<source src="http://127.0.0.1:8000/api/media/video/" type="video/mp4" />
+				<p class="text-red-500">Your browser does not support the video tag.</p>
 				<track kind="captions" />
 			</video>
 		</section>
@@ -281,7 +306,7 @@
 		<!-- Extracted frame here -->
 		{#if frameData.frame_url !== ''}
 			<h1 class="text-2xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
-				Video selected at {frameData.timestamp}
+				Frame selected at {frameData.timestamp}
 			</h1>
 			<img
 				class="my-5 max-w-[1000px] w-full max-h-[500px]"
@@ -307,25 +332,31 @@
 			{#each timestampCollection as _, idx}
 				{@const entry = timestampCollection[timestampCollection.length - 1 - idx]}
 				<section
+					id={`timestamp-${timestampCollection.length - idx}`}
 					aria-labelledby="Timestamp at 0 hours, 0 minutes, and 0 seconds."
-					class="my-3 py-2 border-b border-b-slate-300"
+					class="my-3 py-2 border border-transparent border-b border-b-slate-300 hover:border-slate-500 hover:rounded-lg transition-all delay-150"
 				>
 					<h2 class="font-bold text-slate-600">
-						<span class="px-1">{timestampCollection.length - idx}.</span> Timestamp at {entry.timestamp}
+						<span class="px-1">{timestampCollection.length - idx}.</span> Timestamp at
+						<span
+							><button
+								onclick={() => goToTimestamp(timestampCollection.length - idx)}
+								class="cursor-pointer border transition-all delay-150 hover:bg-red-400 hover:text-white hover:border-red-500 px-1 rounded-md text-red-500"
+								>{entry.timestamp}</button
+							></span
+						>
 					</h2>
 					<pre class="border border-slate-300 p-4 m-4 relative rounded-lg bg-slate-100">
 				<div
 							class="p-1 text-blue-800 bg-slate-300 border border-transparent absolute top-0 left-0 rounded-tl-lg rounded-br-lg">python</div>
-				<code
-							id={`timestamp-${timestampCollection.length - idx}`}
-							class="text-(length:--code-text) md:text-base">	
+				<code class="text-(length:--code-text) md:text-base">	
 					{entry.formatted_code}
 				</code>
 				<button
 							aria-label="Copy code from timestamp {entry.timestamp}"
 							onclick={() => getCode(timestampCollection.length - idx)}
 							type="button"
-							class="cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400"
+							class="cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400 hover:border-blue-500 transition delay-100"
 							>Copy</button
 						>
 				</pre>
