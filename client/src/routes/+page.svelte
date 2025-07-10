@@ -4,6 +4,8 @@
 	import type { VideoData, FrameData } from '$lib/dataTypes';
 	import { onMount } from 'svelte';
 	import { validateTimestamp } from '$lib/helpers';
+	import { successAPIResponse } from '$lib/tests';
+	import CodeExtract from '$lib/components/CodeExtract.svelte';
 
 	let vidData: VideoData = $state({
 		message: '',
@@ -31,6 +33,7 @@
 	let isLoading: boolean = $state(true);
 	let validationErrors: string[] = $state([]);
 	let timestampCollection: FrameData[] = $state([]);
+	let timestampCollectionReversed: FrameData[] = $derived(timestampCollection.toReversed());
 
 	let submitVidFrameFormBtn: HTMLButtonElement;
 	let videoElem: HTMLMediaElement;
@@ -49,6 +52,22 @@
 			toast.error('Error getting video duration, please refresh the page!');
 		}
 	});
+
+	// Mock API success response
+	async function mockResponse(e: Event) {
+		e.preventDefault();
+
+		isLoading = true;
+
+		frameData = await successAPIResponse();
+		if (frameData) {
+			isLoading = false;
+			timestampCollection.push(frameData);
+			toast.success('Code generated!');
+
+			videoElem.currentTime = frameData.timestamp_seconds;
+		}
+	}
 
 	// Get specific frame.
 	async function getVidFrame(e: Event): Promise<void> {
@@ -156,8 +175,6 @@
 	}
 
 	$effect(() => {
-		$inspect(frameData);
-
 		if (!isLoading) {
 			submitVidFrameFormBtn.disabled = false;
 		}
@@ -172,7 +189,7 @@
 		class="md:border-b md:pb-5 md:border-b-slate-300 md:my-2 my-5 flex flex-col items-center sm:col-start-1 sm:col-end-3 sm:row-start-1 sm:row-end-2"
 	>
 		<h1 class="md:text-4xl text-3xl font-semibold text-slate-500">Video2Code</h1>
-		<a class="text-sm text-slate-400" href="https://elishamutang.xyz/"
+		<a class="text-sm text-slate-400" target="_blank" href="https://elishamutang.xyz/"
 			>by <span class="border-b border-b-slate-400 hover:text-slate-800">elishamutang</span></a
 		>
 	</section>
@@ -281,7 +298,7 @@
 				disabled
 				aria-disabled="true"
 				class={`text-xl border disabled:cursor-disabled disabled:bg-gray-300 disabled:border-gray-400 border-red-500 font-semibold p-2 rounded-lg bg-red-500 text-white ${isLoading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
-				onclick={getVidFrame}>{isLoading ? 'Generating frame & code...' : 'Submit'}</button
+				onclick={mockResponse}>{isLoading ? 'Generating frame & code...' : 'Submit'}</button
 			>
 		</form>
 
@@ -305,14 +322,18 @@
 
 		<!-- Extracted frame here -->
 		{#if frameData.frame_url !== ''}
-			<h1 class="text-2xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
-				Frame selected at {frameData.timestamp}
-			</h1>
-			<img
-				class="my-5 max-w-[1000px] w-full max-h-[500px]"
-				src={frameData.frame_url}
-				alt={`Extracted frame at ${frameData.timestamp}`}
-			/>
+			{#if isLoading}
+				<Skeleton class="bg-slate-400 w-full h-[300px]" />
+			{:else}
+				<h1 class="text-2xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
+					Frame selected at {frameData.timestamp}
+				</h1>
+				<img
+					class="my-5 max-w-[1000px] w-full max-h-[500px]"
+					src={frameData.frame_url}
+					alt={`Extracted frame at ${frameData.timestamp}`}
+				/>
+			{/if}
 		{/if}
 	</section>
 
@@ -329,38 +350,9 @@
 				<Skeleton class="bg-slate-400 w-full h-[300px]" />
 			{/if}
 
-			{#each timestampCollection as _, idx}
-				{@const entry = timestampCollection[timestampCollection.length - 1 - idx]}
-				<section
-					id={`timestamp-${timestampCollection.length - idx}`}
-					aria-labelledby="Timestamp at 0 hours, 0 minutes, and 0 seconds."
-					class="my-3 py-2 border border-transparent border-b border-b-slate-300 hover:border-slate-500 hover:rounded-lg transition-all delay-150"
-				>
-					<h2 class="font-bold text-slate-600">
-						<span class="px-1">{timestampCollection.length - idx}.</span> Timestamp at
-						<span
-							><button
-								onclick={() => goToTimestamp(timestampCollection.length - idx)}
-								class="cursor-pointer border transition-all delay-150 hover:bg-red-400 hover:text-white hover:border-red-500 px-1 rounded-md text-red-500"
-								>{entry.timestamp}</button
-							></span
-						>
-					</h2>
-					<pre class="border border-slate-300 p-4 m-4 relative rounded-lg bg-slate-100">
-				<div
-							class="p-1 text-blue-800 bg-slate-300 border border-transparent absolute top-0 left-0 rounded-tl-lg rounded-br-lg">python</div>
-				<code class="text-(length:--code-text) md:text-base">	
-					{entry.formatted_code}
-				</code>
-				<button
-							aria-label="Copy code from timestamp {entry.timestamp}"
-							onclick={() => getCode(timestampCollection.length - idx)}
-							type="button"
-							class="cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400 hover:border-blue-500 transition delay-100"
-							>Copy</button
-						>
-				</pre>
-				</section>
+			<!-- Code Extracts -->
+			{#each timestampCollectionReversed as data, idx}
+				<CodeExtract {data} {idx} {goToTimestamp} {getCode} {timestampCollectionReversed} />
 			{/each}
 		{/if}
 	</section>
