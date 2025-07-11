@@ -33,6 +33,13 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost'
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {
+        'vid_frame': '20/hour',
+        'test': '3/min',
+    }
+}
+
 
 # Application definition
 
