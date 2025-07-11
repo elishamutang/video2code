@@ -1,12 +1,13 @@
 import base64
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 from rest_framework import status
 import os, cv2
 from django.conf import settings
 from ranged_response import RangedFileResponse
 from .helpers import parse_timestamp_to_seconds, \
-    extract_frame, extract_code_from_frame, clean_extracted_text
+    extract_frame, extract_code_from_frame, ai_response
+from .throttles import GetVidFrameThrottle
 
 vid_filename = 'oop.mp4'
 vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'media', 'videos')
@@ -73,6 +74,7 @@ def get_vid_duration(request):
 
 
 @api_view(['GET'])
+@throttle_classes([GetVidFrameThrottle])
 def get_vid_frame(request, timestamp):    
     # Convert timestamp to seconds
     try:
@@ -91,7 +93,11 @@ def get_vid_frame(request, timestamp):
     # Extract frame
     frame_info = extract_frame(vid_filename, timestamp_seconds, timestamp)
 
-    if frame_info:
+    if not frame_info:
+        return Response({
+            'error': 'Failed to extract frame from video'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
         # Read the image file and encode as base64
         try:
             with open(frame_info['frame_path'], 'rb') as image_file:
@@ -108,8 +114,8 @@ def get_vid_frame(request, timestamp):
         try:
             extracted_code = extract_code_from_frame(frame_info['frame_path'])
 
-            # Pass to AI to clean up and format.
-            cleaned_code = clean_extracted_text(extracted_code)
+            # Get properly formatted code and other parameters.
+            response = ai_response(extracted_code)
 
         except Exception as e:
             extracted_code = f"OCR error: {str(e)}"
@@ -123,9 +129,7 @@ def get_vid_frame(request, timestamp):
             'frame_filename': frame_info['frame_filename'],
             'frame_url': frame_url,
             'extracted_code': extracted_code,
-            'formatted_code': cleaned_code,
+            'formatted_code': response['cleaned_code'],
+            'daily_requests_remaining': response['daily_requests_remaining'],
+            'request_reset_time': response['request_reset_time']
         }, status=status.HTTP_200_OK)
-    else:
-        return Response({
-            'error': 'Failed to extract frame from video'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
