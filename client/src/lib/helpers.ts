@@ -43,4 +43,24 @@ function validateTimestamp(timestamp: Timestamp, videoData: VideoData): string[]
 	return errors.length > 0 ? errors : true;
 }
 
-export { extractYoutubeVideoId, validateTimestamp };
+// Check whether localStorage is both supported and available:
+function localStorageAvailable(type: string) {
+	let storage: Storage;
+
+	try {
+		storage = window[type]
+		const x = "__storage_test__";
+		storage.setItem(x, x)
+		storage.removeItem(x)
+		return true;
+	} catch (e: any) {
+		return (
+			e instanceof DOMException &&
+			e.name === "QuotaExceededError" &&
+			// acknowledge QuotaExceededError only if there's something already stored.
+			storage && storage.length! == 0
+		)
+	}
+}
+
+export { extractYoutubeVideoId, validateTimestamp, localStorageAvailable };
