@@ -23,7 +23,7 @@
 	</h2>
 	<pre class="border border-slate-300 p-4 m-4 relative rounded-lg bg-slate-100">
 				<div
-			class="p-1 text-blue-800 bg-slate-300 border border-transparent absolute top-0 left-0 rounded-tl-lg rounded-br-lg">python</div>
+			class="p-1 text-slate-700 bg-slate-300 border border-transparent absolute top-0 left-0 rounded-tl-md rounded-br-lg">python</div>
 				<code class="text-(length:--code-text) md:text-base">	
 					<Highlight language={python} code={data.formatted_code} />
 				</code>
@@ -31,7 +31,7 @@
 			aria-label="Copy code from timestamp {data.timestamp}"
 			onclick={() => getCode(idx)}
 			type="button"
-			class="cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400 hover:border-blue-500 transition delay-100"
+			class="text-slate-700 cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400 hover:border-blue-500 transition delay-100"
 			>Copy</button
 		>
 				</pre>
