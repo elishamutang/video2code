@@ -28,8 +28,8 @@ user = User("Dave Bowman", 19710315)
         frame_path: '',
         frame_url: '',
         message: '',
-        timestamp: '00:05:30',
-        timestamp_seconds: 330,
+        timestamp: '00:03:40',
+        timestamp_seconds: 220,
         video_filename: '',
         extracted_code: '',
         formatted_code: `
@@ -46,8 +46,8 @@ teacher = Teacher("Dave Bowman", 19710315)
         frame_path: '',
         frame_url: '',
         message: '',
-        timestamp: '00:05:30',
-        timestamp_seconds: 330,
+        timestamp: '00:01:50',
+        timestamp_seconds: 110,
         video_filename: '',
         extracted_code: '',
         formatted_code: `
