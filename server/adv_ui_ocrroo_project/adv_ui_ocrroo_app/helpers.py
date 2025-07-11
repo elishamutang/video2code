@@ -12,8 +12,8 @@ load_dotenv()
 vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'media', 'videos')
 
 # Set Tesseract OCR path (WINDOWS ONLY)
-# tesseract_path = os.environ.get('TESSERACT_PATH')
-# pytesseract.pytesseract.tesseract_cmd = tesseract_path
+tesseract_path = os.environ.get('TESSERACT_PATH')
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 # Get video duration 
 def get_vid_duration(video_filename):
@@ -236,7 +236,7 @@ def extract_code_from_frame(frame_path):
 
 
 # Clean extracted code using AI
-def clean_extracted_text(ocr_text: str) -> Optional[str]:
+def ai_response(ocr_text: str) -> Optional[object]:
     """
     Clean up OCR-extracted Python code using Groq AI.
 
@@ -244,7 +244,7 @@ def clean_extracted_text(ocr_text: str) -> Optional[str]:
         ocr_text (str): The raw OCR-extracted code text
 
     Returns:
-        Optional[str]: Cleaned Python code or None if processing fails.
+        Optional[object]: AI response or None if processing fails.
     """
 
     try:
@@ -267,8 +267,7 @@ def clean_extracted_text(ocr_text: str) -> Optional[str]:
         This is the extracted Python code:
         "{ocr_text}" """
 
-
-        completion = client.chat.completions.create(
+        response = client.chat.completions.with_raw_response.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[
                 {
@@ -288,7 +287,10 @@ def clean_extracted_text(ocr_text: str) -> Optional[str]:
         )
 
         # Extract the cleaned code
-        cleaned_code = completion.choices[0].message.content.strip()
+        cleaned_code = response.parse().choices[0].message.content.strip()
+        
+        # Get information about API rate limits.
+        headers = response.headers
 
         if cleaned_code.startswith('```python'):
             cleaned_code = cleaned_code.replace('```python', '')
@@ -296,7 +298,11 @@ def clean_extracted_text(ocr_text: str) -> Optional[str]:
         if cleaned_code.endswith('```'):
             cleaned_code = cleaned_code.replace('```', '')
 
-        return cleaned_code
+        return {
+            'cleaned_code': cleaned_code,
+            'daily_requests_remaining': headers.get("x-ratelimit-remaining-requests"),
+            'request_reset_time': headers.get("x-ratelimit-reset-requests")
+            }
 
     except Exception as e:
         print(f"Error cleaning code with Groq AI: {str(e)}")
