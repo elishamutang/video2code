@@ -3,7 +3,7 @@
 	import { toast } from 'svelte-sonner';
 	import type { VideoData, FrameData } from '$lib/dataTypes';
 	import { onMount } from 'svelte';
-	import { validateTimestamp } from '$lib/helpers';
+	import { localStorageAvailable, validateTimestamp } from '$lib/helpers';
 	import { successAPIResponse } from '$lib/tests';
 	import CodeExtract from '$lib/components/CodeExtract.svelte';
 
@@ -39,17 +39,31 @@
 	let videoElem: HTMLMediaElement;
 
 	onMount(async () => {
-		// Get video duration.
-		try {
-			const response = await fetch('http://127.0.0.1:8000/api/video/duration/', {
-				method: 'GET'
-			});
+		// Check if local storage is available
+		if (localStorageAvailable('localStorage')) {
+			toast.success('Local storage loaded!');
 
-			vidData = await response.json();
-			isLoading = false;
-		} catch (error: any) {
-			console.error('Error getting video duration');
-			toast.error('Error getting video duration, please refresh the page!');
+			// Get video duration.
+			try {
+				const response = await fetch('http://127.0.0.1:8000/api/video/duration/', {
+					method: 'GET'
+				});
+
+				vidData = await response.json();
+				isLoading = false;
+
+				// Set localStorage
+				if (!localStorage.getItem('data')) {
+					localStorage.setItem('data', JSON.stringify(timestampCollection));
+				} else {
+					timestampCollection = JSON.parse(localStorage.getItem('data') ?? '[]');
+				}
+			} catch (error: any) {
+				console.error('Error getting video duration');
+				toast.error('Error getting video duration, please refresh the page!');
+			}
+		} else {
+			toast.error('Local storage not supported :(');
 		}
 	});
 
@@ -64,6 +78,9 @@
 			isLoading = false;
 			timestampCollection.push(frameData);
 			toast.success('Code generated!');
+
+			// Set data in localStorage
+			localStorage.setItem('data', JSON.stringify(timestampCollection));
 
 			videoElem.currentTime = frameData.timestamp_seconds;
 		}
@@ -124,25 +141,42 @@
 		} else {
 			validationErrors = [];
 
-			try {
-				const response = await fetch(`http://127.0.0.1:8000/api/media/video/frame/${timestamp}/`, {
-					method: 'GET'
-				});
+			// Check if timestampCollection exists in localStorage
+			const existingData = timestampCollection.find((data) => data.timestamp === timestamp);
 
-				if (response.ok) {
-					// Get frame data.
-					frameData = await response.json();
-					timestampCollection.push(frameData);
-					toast.success('Code generated!');
-
-					// Set currentTime for videoElem
-					videoElem.currentTime = frameData.timestamp_seconds;
-				}
-			} catch (error: any) {
-				console.error('Error getting video frame');
-				toast.error('Error generating the extracted code, please try again!');
-			} finally {
+			if (existingData) {
 				isLoading = false;
+
+				toast.info('Duplicate found!', {
+					description: `Code at timestamp ${timestamp} has already been generated!`
+				});
+			} else {
+				try {
+					const response = await fetch(
+						`http://127.0.0.1:8000/api/media/video/frame/${timestamp}/`,
+						{
+							method: 'GET'
+						}
+					);
+
+					if (response.ok) {
+						// Get frame data.
+						frameData = await response.json();
+						timestampCollection.push(frameData);
+						toast.success('Code generated!');
+
+						// Overwrite data in localStorage
+						localStorage.setItem('data', JSON.stringify(timestampCollection));
+
+						// Set currentTime for videoElem
+						videoElem.currentTime = frameData.timestamp_seconds;
+					}
+				} catch (error: any) {
+					console.error('Error getting video frame');
+					toast.error('Error generating the extracted code, please try again!');
+				} finally {
+					isLoading = false;
+				}
 			}
 		}
 	}
@@ -166,7 +200,7 @@
 
 	// Allow user to go to a specific point in time of the video based on timestamp.
 	function goToTimestamp(timestampIdx: number) {
-		frameData = timestampCollection[timestampIdx - 1];
+		frameData = timestampCollectionReversed[timestampIdx];
 		videoElem.currentTime = frameData.timestamp_seconds;
 
 		toast.info('Back in time!', {
@@ -186,9 +220,9 @@
 >
 	<!-- Title -->
 	<section
-		class="md:border-b md:pb-5 md:border-b-slate-300 md:my-2 my-5 flex flex-col items-center sm:col-start-1 sm:col-end-3 sm:row-start-1 sm:row-end-2"
+		class="md:border-b md:pb-5 md:border-b-slate-300 my-5 md:my-0 flex flex-col items-center sm:col-start-1 sm:col-end-3 sm:row-start-1 sm:row-end-2"
 	>
-		<h1 class="md:text-4xl text-3xl font-semibold text-slate-500">Video2Code</h1>
+		<h1 class="md:text-5xl text-3xl font-bold text-slate-500">Video2Code.</h1>
 		<a class="text-sm text-slate-400" target="_blank" href="https://elishamutang.xyz/"
 			>by <span class="border-b border-b-slate-400 hover:text-slate-800">elishamutang</span></a
 		>
@@ -210,7 +244,7 @@
 	</section>
 
 	<section
-		class="sm:row-start-3 sm:row-end-4 sm:max-w-[1000px] sm:col-1 border border-slate-400 w-full bg-slate-100 flex flex-col items-center p-2 rounded-lg"
+		class="sm:row-start-3 sm:row-end-4 sm:border-none border-t border-b border-t-slate-300 border-b-slate-300 sm:max-w-[1000px] sm:col-1 w-full flex flex-col items-center p-2"
 	>
 		<!-- Form -->
 		<form
@@ -235,9 +269,11 @@
 					</ul>
 				{/if}
 
-				<div class="flex flex-col lg:flex-row sm:gap-2 sm:justify-center items-center w-full mb-2">
-					<div class="flex items-center gap-2 w-max">
-						<label for="hours" class="text-white"> Hours: </label>
+				<div
+					class="flex flex-col xl:justify-around xl:flex-row sm:gap-2 sm:justify-center items-center w-full mb-2"
+				>
+					<div class="flex items-center gap-2 w-[200px] xl:w-max max-w-content sm:mt-2">
+						<label for="hours" class="text-white w-max text-end flex-1"> Hours: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -249,13 +285,13 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class={`truncate text-black flex-1 border p-2 border-transparent rounded-lg ${isLoading ? 'bg-gray-400' : 'bg-gray-200'}`}
+								class="truncate text-black flex-1 w-[200px] lg:w-[80px] border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
 
-					<div class="flex items-center gap-2 w-max mt-2">
-						<label for="minutes" class="text-white"> Minutes: </label>
+					<div class="flex items-center gap-2 w-[200px] max-w-content xl:w-max mt-2">
+						<label for="minutes" class="text-white w-[100px] flex-1 text-end"> Minutes: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -267,13 +303,13 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class="truncate text-black flex-1 border p-2 border-transparent bg-gray-200 rounded-lg"
+								class="w-[200px] flex-1 lg:w-[80px] truncate text-black border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
 
-					<div class="flex items-center gap-2 w-max mt-2">
-						<label for="seconds" class="text-white"> Seconds: </label>
+					<div class="flex items-center xl:w-max gap-2 w-[200px] max-w-content mt-2">
+						<label for="seconds" class="text-white w-[100px] flex-1 text-end"> Seconds: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -285,7 +321,7 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class="truncate text-black flex-1 border p-2 border-transparent bg-gray-200 rounded-lg"
+								class="w-[200px] lg:w-[80px] truncate text-black flex-1 border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
@@ -298,7 +334,7 @@
 				disabled
 				aria-disabled="true"
 				class={`text-xl border disabled:cursor-disabled disabled:bg-gray-300 disabled:border-gray-400 border-red-500 font-semibold p-2 rounded-lg bg-red-500 text-white ${isLoading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
-				onclick={mockResponse}>{isLoading ? 'Generating frame & code...' : 'Submit'}</button
+				onclick={getVidFrame}>{isLoading ? 'Generating frame & code...' : 'Submit'}</button
 			>
 		</form>
 
