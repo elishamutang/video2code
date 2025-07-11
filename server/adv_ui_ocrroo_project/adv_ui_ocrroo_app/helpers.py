@@ -12,8 +12,8 @@ load_dotenv()
 vid_folder_path = os.path.join(settings.BASE_DIR, 'adv_ui_ocrroo_app', 'media', 'videos')
 
 # Set Tesseract OCR path (WINDOWS ONLY)
-tesseract_path = os.environ.get('TESSERACT_PATH')
-pytesseract.pytesseract.tesseract_cmd = tesseract_path
+# tesseract_path = os.environ.get('TESSERACT_PATH')
+# pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 # Get video duration 
 def get_vid_duration(video_filename):
