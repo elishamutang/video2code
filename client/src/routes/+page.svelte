@@ -4,7 +4,6 @@
 	import type { VideoData, FrameData } from '$lib/dataTypes';
 	import { onMount } from 'svelte';
 	import { localStorageAvailable, validateTimestamp } from '$lib/helpers';
-	import { successAPIResponse } from '$lib/tests';
 	import CodeExtract from '$lib/components/CodeExtract.svelte';
 
 	let vidData: VideoData = $state({
@@ -66,25 +65,6 @@
 			toast.error('Local storage not supported :(');
 		}
 	});
-
-	// Mock API success response
-	async function mockResponse(e: Event) {
-		e.preventDefault();
-
-		isLoading = true;
-
-		frameData = await successAPIResponse();
-		if (frameData) {
-			isLoading = false;
-			timestampCollection.push(frameData);
-			toast.success('Code generated!');
-
-			// Set data in localStorage
-			localStorage.setItem('data', JSON.stringify(timestampCollection));
-
-			videoElem.currentTime = frameData.timestamp_seconds;
-		}
-	}
 
 	// Get specific frame.
 	async function getVidFrame(e: Event): Promise<void> {
@@ -159,9 +139,19 @@
 						}
 					);
 
-					if (response.ok) {
+					if (!response.ok) {
+						// Throw error
+						const errorMsg = await response.json();
+						throw new Error(errorMsg.detail);
+					} else {
 						// Get frame data.
 						frameData = await response.json();
+
+						// Throw an error if formatted_code is null.
+						if (!frameData.formatted_code) {
+							throw new Error('Error formatting the code...');
+						}
+
 						timestampCollection.push(frameData);
 						toast.success('Code generated!');
 
@@ -172,8 +162,8 @@
 						videoElem.currentTime = frameData.timestamp_seconds;
 					}
 				} catch (error: any) {
-					console.error('Error getting video frame');
-					toast.error('Error generating the extracted code, please try again!');
+					console.error(error.message);
+					toast.error(error.message ?? 'Error generating the extracted code, please try again!');
 				} finally {
 					isLoading = false;
 				}
@@ -220,9 +210,9 @@
 >
 	<!-- Title -->
 	<section
-		class="md:border-b md:pb-5 md:border-b-slate-300 my-5 md:my-0 flex flex-col items-center sm:col-start-1 sm:col-end-3 sm:row-start-1 sm:row-end-2"
+		class="my-5 border-b border-b-slate-300 pb-5 md:my-0 flex flex-col items-center sm:col-start-1 sm:col-end-3 sm:row-start-1 sm:row-end-2"
 	>
-		<h1 class="md:text-5xl text-3xl font-bold text-slate-500">Video2Code.</h1>
+		<h1 class="md:text-5xl text-3xl font-bold text-slate-600">Video2Code.</h1>
 		<a class="text-sm text-slate-400" target="_blank" href="https://elishamutang.xyz/"
 			>by <span class="border-b border-b-slate-400 hover:text-slate-800">elishamutang</span></a
 		>
@@ -232,13 +222,12 @@
 	<section
 		class="sm:border-b sm:border-b-slate-300 w-full sm:col-start-1 sm:col-end-3 sm:row-start-2 sm:row-end-3"
 	>
-		<section
-			class="sm:place-self-center sm:max-w-md mb-5 border p-2 rounded-lg bg-slate-100 border-slate-500"
-		>
-			<h2 class="font-bold text-xl text-slate-600">What is this about?</h2>
-			<p class="text-slate-800">
-				A prototype to <span class="italic">detect</span> code, <span class="italic">extract</span> it
-				from a specific frame, and display it to the user in the appropriate format.
+		<section class="pb-5">
+			<h1 class="md:text-4xl text-2xl text-slate-600 font-bold mb-2">What is it?</h1>
+			<p class="text-slate-700 text-lg">
+				- A web application to <span class="italic">detect</span>,
+				<span class="italic">extract</span>, and <span class="italic">display</span> code from a specific
+				frame to the user in the appropriate format.
 			</p>
 		</section>
 	</section>
@@ -246,16 +235,24 @@
 	<section
 		class="sm:row-start-3 sm:row-end-4 sm:border-none border-t border-b border-t-slate-300 border-b-slate-300 sm:max-w-[1000px] sm:col-1 w-full flex flex-col items-center p-2"
 	>
+		<!-- Disclaimer -->
+		<section class="p-2 border border-slate-300 rounded-md mt-2 xl:md-0">
+			<p class="text-slate-500 text-sm">
+				<strong>Disclaimer: </strong> Requests are limited to <strong>20 requests</strong> per hour to
+				prevent abuse and ensure fair access.
+			</p>
+		</section>
+
 		<!-- Form -->
 		<form
-			class="md:place-self-center my-5 sm:w-max-content sm:max-w-[800px] w-full bg-slate-600 p-3 rounded-lg border flex gap-2 flex flex-col"
+			class="md:place-self-center my-5 sm:w-max-content sm:max-w-[800px] w-full bg-slate-300 p-3 rounded-lg border flex gap-2 flex flex-col"
 			id="timestampForm"
 		>
-			<h2 class="text-white text-2xl border-b pb-2 font-semibold">
+			<h2 class="text-slate-700 text-2xl border-b pb-2 font-semibold">
 				Get a specific frame - Video duration: {vidData.duration_formatted}
 			</h2>
 
-			<div class="flex-start flex-col gap-2 flex text-white font-semibold">
+			<div class="flex-start flex-col gap-2 flex text-slate-700 font-semibold">
 				<p class="w-full text-center text-xl my-2">Enter a timestamp below:</p>
 
 				{#if validationErrors.length > 0}
@@ -273,7 +270,7 @@
 					class="flex flex-col xl:justify-around xl:flex-row sm:gap-2 sm:justify-center items-center w-full mb-2"
 				>
 					<div class="flex items-center gap-2 w-[200px] xl:w-max max-w-content sm:mt-2">
-						<label for="hours" class="text-white w-max text-end flex-1"> Hours: </label>
+						<label for="hours" class="text-slate-700 w-max text-end flex-1"> Hours: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -285,13 +282,13 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class="truncate text-black flex-1 w-[200px] lg:w-[80px] border p-2 border-transparent bg-gray-200 rounded-md"
+								class="text-slate-700 truncate text-black flex-1 w-[200px] lg:w-[80px] border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
 
 					<div class="flex items-center gap-2 w-[200px] max-w-content xl:w-max mt-2">
-						<label for="minutes" class="text-white w-[100px] flex-1 text-end"> Minutes: </label>
+						<label for="minutes" class="text-slate-700 w-[100px] flex-1 text-end"> Minutes: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -303,13 +300,13 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class="w-[200px] flex-1 lg:w-[80px] truncate text-black border p-2 border-transparent bg-gray-200 rounded-md"
+								class="text-slate-700 w-[200px] flex-1 lg:w-[80px] truncate text-black border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
 
 					<div class="flex items-center xl:w-max gap-2 w-[200px] max-w-content mt-2">
-						<label for="seconds" class="text-white w-[100px] flex-1 text-end"> Seconds: </label>
+						<label for="seconds" class="text-slate-700 w-[100px] flex-1 text-end"> Seconds: </label>
 						{#if isLoading}
 							<Skeleton class="w-[80px] min-h-[40px] bg-gray-300" />
 						{:else}
@@ -321,7 +318,7 @@
 								min="0"
 								value="0"
 								aria-busy={isLoading ? 'true' : 'false'}
-								class="w-[200px] lg:w-[80px] truncate text-black flex-1 border p-2 border-transparent bg-gray-200 rounded-md"
+								class="text-slate-700 w-[200px] lg:w-[80px] truncate text-black flex-1 border p-2 border-transparent bg-gray-200 rounded-md"
 							/>
 						{/if}
 					</div>
@@ -333,7 +330,7 @@
 				type="submit"
 				disabled
 				aria-disabled="true"
-				class={`text-xl border disabled:cursor-disabled disabled:bg-gray-300 disabled:border-gray-400 border-red-500 font-semibold p-2 rounded-lg bg-red-500 text-white ${isLoading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
+				class={`text-xl border hover:bg-red-600 disabled:cursor-disabled disabled:bg-gray-300 disabled:border-gray-400 border-red-400 font-semibold p-2 rounded-lg bg-red-500 transition-all delay-150 motion-discrete text-white ${isLoading ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
 				onclick={getVidFrame}>{isLoading ? 'Generating frame & code...' : 'Submit'}</button
 			>
 		</form>
@@ -343,7 +340,7 @@
 
 		<!-- Video -->
 		<section class="flex flex-col items-center">
-			<h1 class="text-2xl mb-2 font-semibold text-slate-600">Video</h1>
+			<h1 class="text-3xl mb-2 font-bold text-slate-600">Video</h1>
 			<video
 				bind:this={videoElem}
 				poster="https://i.ytimg.com/vi/apACNr7DC_s/hq720.jpg?sqp=-oaymwEnCNAFEJQDSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLArfSCg8eIP-tmc8Q8YcbsZy5bwxA"
@@ -361,7 +358,7 @@
 			{#if isLoading}
 				<Skeleton class="bg-slate-400 w-full h-[300px]" />
 			{:else}
-				<h1 class="text-2xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
+				<h1 class="text-3xl text-slate-600 font-semibold border-b py-2 border-b-slate-300">
 					Frame selected at {frameData.timestamp}
 				</h1>
 				<img
@@ -377,7 +374,7 @@
 	<section
 		class="md:p-4 md:border-l md:border-l-slate-300 md:rounded-none sm:col-2 sm:row-start-3 sm:row-end-5 border border-transparent w-full max-h-[1000px] h-full overflow-auto rounded-lg"
 	>
-		<h1 class="md:mt-0 text-3xl my-2 mt-5 font-semibold text-slate-600">Timestamps</h1>
+		<h1 class="md:mt-0 text-3xl my-2 mt-5 font-bold text-slate-600">Timestamps</h1>
 
 		{#if timestampCollection.length === 0 && !isLoading}
 			<p class="m-2 text-slate-500 italic">Nothing to see here...</p>
