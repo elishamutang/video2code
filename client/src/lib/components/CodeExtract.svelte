@@ -29,7 +29,7 @@
 				</code>
 				<button
 			aria-label="Copy code from timestamp {data.timestamp}"
-			onclick={() => getCode(idx)}
+			onclick={() => getCode(timestampCollectionReversed.length - idx)}
 			type="button"
 			class="text-slate-700 cursor-pointer top-2 right-2 absolute border py-1 px-2 bg-slate-300 rounded-md border-slate-400 hover:border-blue-500 transition delay-100"
 			>Copy</button
