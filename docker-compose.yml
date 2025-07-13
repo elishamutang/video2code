@@ -1,6 +1,6 @@
 services:
   backend:
-    image: video2code-backend
+    image: elishamutang/video2code-backend:latest
     container_name: video2code-backend
     build:
       context: ./server
@@ -14,6 +14,7 @@ services:
       - media_volume:/app/adv_ui_ocrroo_project/adv_ui_ocrroo_app/media
 
   nginx:
+    image: elishamutang/video2code-nginx:latest
     container_name: video2code-nginx
     build:
       context: ./client
