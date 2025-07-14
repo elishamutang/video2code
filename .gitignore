@@ -1,2 +1,3 @@
 *.txt
 design/
+nginx/local_nginx.conf
