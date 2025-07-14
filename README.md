@@ -1,5 +1,7 @@
 # Video 2 Code
 
+![vide2code-demo](demo.gif)
+
 ## What is it?
 
 A bare-bones prototype to _detect_ code, _extract_ it from a specific frame, and display it to the user in the appropriate format.
