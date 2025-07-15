@@ -1,4 +1,4 @@
-# Video 2 Code
+# Video2Code
 
 ![vide2code-demo](demo.gif)
 
@@ -8,11 +8,17 @@ A bare-bones prototype to _detect_ code, _extract_ it from a specific frame, and
 
 Built using Svelte and Django REST Framework.
 
+![Svelte](https://img.shields.io/badge/svelte-%23f1413d.svg?style=for-the-badge&logo=svelte&logoColor=white)
+![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
 ## Live Preview
 
 ** COMING SOON **
 
-## Installation
+## Install locally
 
 ## Pre-requisites
 
@@ -21,10 +27,10 @@ Built using Svelte and Django REST Framework.
 
 ## Using Docker
 
-I have created a docker compose file that will get this application running in no time! Simply do the following:
+I have created a docker compose file that you can run the application locally which will get the application running in no time! Simply do the following:
 
 ```
-docker compose up
+docker compose -f docker-compose-local.yml up
 ```
 
 ## 1. Clone Repo
