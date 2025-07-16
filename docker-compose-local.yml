@@ -14,7 +14,7 @@ services:
     env_file:
       - ./server/adv_ui_ocrroo_project/.env
     volumes:
-      - media_volume:/app/adv_ui_ocrroo_project/adv_ui_ocrroo_app/media
+      - media_volume_local:/app/adv_ui_ocrroo_project/adv_ui_ocrroo_app/media
 
   nginx:
     image: elishamutang/video2code-nginx:latest
@@ -36,7 +36,7 @@ services:
       - backend
     volumes:
       - ./nginx/local_nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - media_volume:/app/adv_ui_ocrroo_app/media
+      - media_volume_local:/app/adv_ui_ocrroo_app/media
 
 volumes:
-  media_volume:
+  media_volume_local:
