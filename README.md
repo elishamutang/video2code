@@ -16,7 +16,7 @@ Built using Svelte and Django REST Framework.
 
 ## Live Preview
 
-Visit video2code.xyz
+Visit [video2code.xyz](https://video2code.xyz)
 
 ## Install locally
 
