@@ -42,24 +42,27 @@
 		if (localStorageAvailable('localStorage')) {
 			toast.success('Local storage loaded!');
 
-			// Get video duration.
-			try {
-				const response = await fetch('https://video2code.xyz/api/video/duration/', {
-					method: 'GET'
-				});
+			// Wait for video to load
+			if (videoElem) {
+				// Get video duration.
+				try {
+					const response = await fetch('https://video2code.xyz/api/video/duration/', {
+						method: 'GET'
+					});
 
-				vidData = await response.json();
-				isLoading = false;
+					vidData = await response.json();
+					isLoading = false;
 
-				// Set localStorage
-				if (!localStorage.getItem('data')) {
-					localStorage.setItem('data', JSON.stringify(timestampCollection));
-				} else {
-					timestampCollection = JSON.parse(localStorage.getItem('data') ?? '[]');
+					// Set localStorage
+					if (!localStorage.getItem('data')) {
+						localStorage.setItem('data', JSON.stringify(timestampCollection));
+					} else {
+						timestampCollection = JSON.parse(localStorage.getItem('data') ?? '[]');
+					}
+				} catch (error: any) {
+					console.error('Error getting video duration');
+					toast.error('Error getting video duration, please refresh the page!');
 				}
-			} catch (error: any) {
-				console.error('Error getting video duration');
-				toast.error('Error getting video duration, please refresh the page!');
 			}
 		} else {
 			toast.error('Local storage not supported :(');
@@ -204,6 +207,10 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	<title>video2code</title>
+</svelte:head>
 
 <main
 	class="m-2 border-slate-300 rounded-lg sm:border md:p-5 max-w-7xl gap-6 sm:grid sm:grid-cols-2 sm:m-5"
