@@ -44,7 +44,7 @@
 
 			// Get video duration.
 			try {
-				const response = await fetch('http://127.0.0.1:8000/api/video/duration/', {
+				const response = await fetch('https://video2code.xyz/api/video/duration/', {
 					method: 'GET'
 				});
 
@@ -133,7 +133,7 @@
 			} else {
 				try {
 					const response = await fetch(
-						`http://127.0.0.1:8000/api/media/video/frame/${timestamp}/`,
+						`https://video2code.xyz/api/media/video/frame/${timestamp}/`,
 						{
 							method: 'GET'
 						}
@@ -347,7 +347,7 @@
 				controls
 				class="mb-10 w-full max-w-[800px]"
 			>
-				<source src="http://127.0.0.1:8000/api/media/video/" type="video/mp4" />
+				<source src="https://video2code.xyz/api/media/video/" type="video/mp4" />
 				<p class="text-red-500">Your browser does not support the video tag.</p>
 				<track kind="captions" />
 			</video>
