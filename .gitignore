@@ -2,3 +2,4 @@
 design/
 certbot/
 TODO.md
+renew-cert.sh
